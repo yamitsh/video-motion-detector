@@ -20,7 +20,7 @@ def streamer(video_path, detector_queue):
             break
         # put the frame in the queue
         detector_queue.put(frame)
-        time.sleep(0.03)
+        time.sleep(0.02)
 
     # the video is over, stop the detector process
     detector_queue.put(None)
@@ -129,3 +129,10 @@ if __name__ == '__main__':
     streamer_p.start()
     detector_p.start()
     displayer_p.start()
+
+    # wait for all processes to finish
+    streamer_p.join()
+    detector_p.join()
+    displayer_p.join()
+
+    print("All processes have finished, exiting...")
