@@ -69,7 +69,7 @@ def detector(detector_queue, displayer_queue):
     print("detector finished")
 
 
-def displayer(displayer_queue):
+def displayer(displayer_queue, is_blur=True):
     """
     receives frames and detection information, draws detections and timestamp,
     and displays the video
@@ -81,9 +81,17 @@ def displayer(displayer_queue):
 
         frame, detections = item
 
-        # draw detections (rectangles)
         for x, y, w, h in detections:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            if is_blur:
+                blurred_frame = frame.copy()
+                blurred_reg = cv2.GaussianBlur(frame[y:y + h, x:x + w], (25, 25), 0)
+                blurred_frame[y:y + h, x:x + w] = blurred_reg
+
+                # Overlay the blurred detections onto the original frame
+                frame = cv2.addWeighted(frame, 1 - 0.6, blurred_frame, 0.6, 0)
+            else:
+                # draw detections (rectangles)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         # write current time
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -121,4 +129,3 @@ if __name__ == '__main__':
     streamer_p.start()
     detector_p.start()
     displayer_p.start()
-    
